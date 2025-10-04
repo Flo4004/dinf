@@ -489,7 +489,14 @@ def rsa_process_file(input_path, output_path, n_big, key, block_size_in, block_s
 
 def vernam_process_file(input_path, output_path, key, block_size_in, block_size_out):
     """
+    Шифрует файл шифром Вернама
     
+    Args:
+        input_path (str): Путь к входному файлу.
+        output_path (str): Путь к выходному файлу.
+        key (int): Ключ.
+        block_size_in (int): Размер блока для чтения (в байтах).
+        block_size_out (int): Размер блока для записи (в байтах).
     """
     try:
         with open(input_path, 'rb') as f_in, open(output_path, 'wb') as f_out:
