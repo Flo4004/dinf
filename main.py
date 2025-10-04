@@ -496,6 +496,7 @@ def demo_vernam():
         return
 
     encrypted_file = input_file + ".encrypted"
+    temp_encrypted_content = encrypted_file + ".temp_content"
     
     block_size_in = (k1.bit_length() + 7) // 8
     block_size_out = block_size_in
@@ -506,12 +507,29 @@ def demo_vernam():
                 
         print("\n--- НАЧАЛО ШИФРОВАНИЯ ---")
         print(f"Шифруем '{input_file}' с использованием ключа {k1}")
-        cl.vernam_process_file(input_file, encrypted_file, k1, block_size_in, block_size_out)
+
+        original_size = os.path.getsize(input_file)
+        
+        cl.vernam_process_file(input_file, temp_encrypted_content, k1, block_size_in, block_size_out)
+        
+        with open(encrypted_file, 'wb') as f_out, open(temp_encrypted_content, 'rb') as f_in_temp:
+            f_out.write(original_size.to_bytes(8, byteorder='big'))
+            f_out.write(f_in_temp.read())
+        
+        os.remove(temp_encrypted_content)
         print(f"Зашифрованный файл сохранен как {encrypted_file}")
 
         print("\n--- НАЧАЛО РАСШИФРОВАНИЯ ---")
         print(f"Расшифровываем '{encrypted_file}' с использованием приватного ключа X_b...")
-        cl.vernam_process_file(encrypted_file, decrypted_file, k2, block_size_out, block_size_in)
+
+        with open(encrypted_file, 'rb') as f_in:
+            original_size_from_file = int.from_bytes(f_in.read(8), byteorder='big')
+            with open(temp_encrypted_content, 'wb') as f_out_temp:
+                f_out_temp.write(f_in.read())
+
+        cl.vernam_process_file(temp_encrypted_content, decrypted_file, k2, block_size_out, block_size_in, original_size_from_file)
+
+        os.remove(temp_encrypted_content)
         print(f"Расшифрованный файл сохранен как '{decrypted_file}'")
     
     except Exception as e:
