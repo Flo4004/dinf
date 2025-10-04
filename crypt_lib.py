@@ -481,4 +481,35 @@ def rsa_process_file(input_path, output_path, n_big, key, block_size_in, block_s
     except Exception as e:
         print(f"Произошла ошибка при обработке файла: {e}")
         return False
+
+
+                            ######################
+                            ### ЛАБАРАТОРНАЯ 7 ###
+                            ######################
+
+def vernam_process_file(input_path, output_path, key, block_size_in, block_size_out):
+    """
     
+    """
+    try:
+        with open(input_path, 'rb') as f_in, open(output_path, 'wb') as f_out:
+            while True:
+                block = f_in.read(block_size_in)
+                if not block:
+                    break
+                
+                m = int.from_bytes(block, byteorder='big')
+
+                e = m ^ key
+
+                f_out.write(e.to_bytes(block_size_out, byteorder='big'))
+        
+        return True
+
+    except FileNotFoundError:
+        print(f"Ошибка: Файл не найден по пути {input_path}")
+        return False
+    
+    except Exception as e:
+        print(f"Произошла ошибка при обработке файла: {e}")
+        return False
