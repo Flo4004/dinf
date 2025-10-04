@@ -481,4 +481,57 @@ def rsa_process_file(input_path, output_path, n_big, key, block_size_in, block_s
     except Exception as e:
         print(f"Произошла ошибка при обработке файла: {e}")
         return False
+
+
+                            ######################
+                            ### ЛАБАРАТОРНАЯ 7 ###
+                            ######################
+
+def vernam_process_file(input_path, output_path, key, block_size_in, block_size_out, original_size=None):
+    """
+    Шифрует файл шифром Вернама
     
+    Args:
+        input_path (str): Путь к входному файлу.
+        output_path (str): Путь к выходному файлу.
+        key (int): Ключ.
+        block_size_in (int): Размер блока для чтения (в байтах).
+        block_size_out (int): Размер блока для записи (в байтах).
+    """
+    try:
+        with open(input_path, 'rb') as f_in, open(output_path, 'wb') as f_out:
+
+            bytes_written = 0
+
+            while True:
+                block = f_in.read(block_size_in)
+                if not block:
+                    break
+                
+                m = int.from_bytes(block, byteorder='big')
+
+                e = m ^ key
+
+                if original_size is not None:
+                    remaining_bytes = original_size - bytes_written
+                    bytes_to_write_count = min(block_size_out, remaining_bytes)
+                else:
+                    bytes_to_write_count = block_size_out
+
+                processed_block = e.to_bytes(block_size_out, byteorder='big')
+
+                if original_size is not None:
+                    f_out.write(processed_block[-bytes_to_write_count:])
+                    bytes_written += bytes_to_write_count
+                else:
+                    f_out.write(processed_block)
+        
+        return True
+
+    except FileNotFoundError:
+        print(f"Ошибка: Файл не найден по пути {input_path}")
+        return False
+    
+    except Exception as e:
+        print(f"Произошла ошибка при обработке файла: {e}")
+        return False

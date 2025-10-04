@@ -445,6 +445,97 @@ def demo_rsa():
         print(f"Произошла непредвиденная ошибка: {e}")
         return -1
 
+def demo_vernam():
+    """
+
+    """
+
+    print("\n" + "=" * 50)
+    print("Демонстрация шифра Вернама")
+    print("=" * 50)
+
+    try:
+        input_file = input("Введите путь к исходному файлу: ")
+        decrypted_file = input("Введите путь для сохранения конечного (расшифрованного) файла: ")
+        
+        if not os.path.exists(input_file):
+            print(f"Ошибка: Исходный файл '{input_file}' не найден.")
+            return
+    except Exception as e:
+        print(f"Ошибка ввода: {e}")
+        return
+
+    print("\nВыберите способ получения параметров:")
+    print("1 - Ввести ключ K с клавиатуры")
+    print("2 - Сгенерировать параметры автоматически")
+    param_choice = input("Ваш выбор: ")
+
+    
+    try:
+        if param_choice == '1':
+            k1 = int(input(f"Введите ключ шифрования K: "))
+
+        elif param_choice == '2':
+            print("\nГенерация параметров протоколом Деффи-Хелмана...")
+            p, g, secret_a, secret_b = cl.generate_diffie_hellman_strong_params()
+            public_a, public_b, k1, k2 = cl.diffie_hellman_exchange(p, g, secret_a, secret_b)
+
+            if k1 != k2:
+                print(f"Сгенерированные параметры протоколом Деффи-Хелмана не совпадают k1 = {k1}, k2 = {k2}")
+                return
+
+        else:
+            print("Неверный выбор!")
+            return
+            
+        print("\n--- Сгенерированные параметры ---")
+        print(f"key = {k1}")
+
+    except Exception as e:
+        print(f"Ошибка при обработке параметров: {e}")
+        return
+
+    encrypted_file = input_file + ".encrypted"
+    temp_encrypted_content = encrypted_file + ".temp_content"
+    
+    block_size_in = (k1.bit_length() + 7) // 8
+    block_size_out = block_size_in
+
+    print(f"\nИсходный файл разобъется на блоки размером {block_size_in} байт.")
+
+    try:
+                
+        print("\n--- НАЧАЛО ШИФРОВАНИЯ ---")
+        print(f"Шифруем '{input_file}' с использованием ключа {k1}")
+
+        original_size = os.path.getsize(input_file)
+        
+        cl.vernam_process_file(input_file, temp_encrypted_content, k1, block_size_in, block_size_out)
+        
+        with open(encrypted_file, 'wb') as f_out, open(temp_encrypted_content, 'rb') as f_in_temp:
+            f_out.write(original_size.to_bytes(8, byteorder='big'))
+            f_out.write(f_in_temp.read())
+        
+        os.remove(temp_encrypted_content)
+        print(f"Зашифрованный файл сохранен как {encrypted_file}")
+
+        print("\n--- НАЧАЛО РАСШИФРОВАНИЯ ---")
+        print(f"Расшифровываем '{encrypted_file}' с использованием приватного ключа X_b...")
+
+        with open(encrypted_file, 'rb') as f_in:
+            original_size_from_file = int.from_bytes(f_in.read(8), byteorder='big')
+            with open(temp_encrypted_content, 'wb') as f_out_temp:
+                f_out_temp.write(f_in.read())
+
+        cl.vernam_process_file(temp_encrypted_content, decrypted_file, k2, block_size_out, block_size_in, original_size_from_file)
+
+        os.remove(temp_encrypted_content)
+        print(f"Расшифрованный файл сохранен как '{decrypted_file}'")
+    
+    except Exception as e:
+        print(f"Произошла непредвиденная ошибка: {e}")
+        return -1
+
 def main():
     """Главное меню программы."""
     while True:
@@ -456,6 +547,7 @@ def main():
         print("3 - Шифр Шамира")
         print("4 - Шифр Эль-Гамаля")
         print("5 - Шифр RSA")
+        print("6 - Шифр Вернама")
         print("0 - Выход")
         
         choice = input("Ваш выбор: ")
@@ -473,6 +565,8 @@ def main():
             demo_elgamal()
         elif choice == '5':
             demo_rsa()
+        elif choice == '6':
+            demo_vernam()
         else:
             print("Неверный выбор!")
 
