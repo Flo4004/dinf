@@ -24,6 +24,8 @@ def fast_exp_mod(a, x, p):
         s = (s * s) % p
     return y
 
+
+
 def fermat_primality_test(n, k=50):
     """
     Тест простоты Ферма
@@ -44,6 +46,8 @@ def fermat_primality_test(n, k=50):
         if fast_exp_mod(a, n - 1, n) != 1:
             return False
     return True
+
+
 
 def extended_euclidean_algorithm(a, b):
     """
@@ -70,6 +74,8 @@ def extended_euclidean_algorithm(a, b):
     y = x1
     return gcd, x, y
 
+
+
 def mod_inverse(n, modulus):
     """
     Находит модульный мультипликативный обратный элемент.
@@ -95,46 +101,7 @@ def mod_inverse(n, modulus):
         raise Exception('Модульный обратный элемент не существует')
     return x % modulus
 
-def baby_step_giant_step(a, y, p):
-    """
-    Решает задачу дискретного логарифма методом "Шаг младенца, шаг великана".
 
-    Находит такое значение x, что удовлетворяет уравнению y = a^x mod p.
-    Алгоритм основан на идее "встречи посередине" и имеет временную
-    сложность O(sqrt(p)), что значительно эффективнее полного перебора.
-    
-    Args:
-        a (int): Основание степени.
-        y (int): Результат возведения в степень по модулю.
-        p (int): Простой модуль.
-        
-    Returns:
-        int or None: Целое число x, являющееся решением уравнения.
-                     Возвращает None, если решение не найдено.
-    """
-
-    m = int(math.sqrt(p)) + 1
-
-    baby_steps = {}
-    val = 1
-    for j in range(m):
-        baby_steps[val] = j
-        val = (val * a) % p
-
-    a_inv_m = mod_inverse(fast_exp_mod(a, m, p), p)
-
-    giant_step_val = y
-    for i in range(m):
-        if giant_step_val in baby_steps:
-            j = baby_steps[giant_step_val]
-            return i * m + j
-        giant_step_val = (giant_step_val * a_inv_m) % p
-
-    return None
-
-                            ######################
-                            ### ЛАБАРАТОРНАЯ 3 ###
-                            ######################
 
 def generate_safe_prime(min_val, max_val):
     """
@@ -153,6 +120,8 @@ def generate_safe_prime(min_val, max_val):
             
             if fermat_primality_test(p_candidate):
                 return p_candidate, q_candidate
+
+
 
 def find_primitive_root(p, q):
     """
@@ -183,4 +152,3 @@ def calculate_file_hash(filepath):
         return sha256_hash.digest()
     except FileNotFoundError:
         return None
-    
