@@ -4,6 +4,7 @@ import os
 import math
 
 import diffie_hellman
+import shamir
 import elgamal
 import rsa
 import vernam
@@ -90,108 +91,6 @@ def demo_bsgs():
 
 
 
-
-
-
-def demo_shamir():
-    """
-    Единый процесс демонстрации протокола Шамира
-    """
-    BLOCK_SIZE = 2
-
-    print("\n" + "=" * 50)
-    print("Демонстрация протокола Шамира (полный цикл)")
-    print("=" * 50)
-    
-    try:
-        input_file = input("Введите путь к исходному файлу: ")
-        decrypted_file = input("Введите путь для сохранения конечного (расшифрованного) файла: ")
-        
-        if not os.path.exists(input_file):
-            print(f"Ошибка: Исходный файл '{input_file}' не найден.")
-            return
-    except Exception as e:
-        print(f"Ошибка ввода: {e}")
-        return
-
-    print("\nВыберите способ получения параметров:")
-    print("1 - Ввести p, C_a, C_b с клавиатуры")
-    print("2 - Сгенерировать параметры автоматически")
-    param_choice = input("Ваш выбор: ")
-
-    p, c_a, d_a, c_b, d_b = 0, 0, 0, 0, 0
-    
-    try:
-        if param_choice == '1':
-            p = int(input(f"Введите простое p ({256**1} < p < {256**BLOCK_SIZE}): "))
-            if p <= 255:
-                print("Ошибка: p должно быть больше 255.")
-                return
-            c_a = int(input("Введите ключ Алисы C_a: "))
-            c_b = int(input("Введите ключ Боба C_b: "))
-            phi = p - 1
-            d_a = cl.mod_inverse(c_a, phi)
-            d_b = cl.mod_inverse(c_b, phi)
-        elif param_choice == '2':
-            print("\nГенерация параметров...")
-            p, c_a, d_a, c_b, d_b = cl.shamir_generate_params(max_p=(256**BLOCK_SIZE - 1))
-        else:
-            print("Неверный выбор!")
-            return
-            
-        print("\n--- Сгенерированные параметры ---")
-        print(f"p = {p}")
-        print(f"Ключи Алисы: C_a={c_a}, D_a={d_a}")
-        print(f"Ключи Боба: C_b={c_b}, D_b={d_b}")
-
-    except Exception as e:
-        print(f"Ошибка при обработке параметров: {e}")
-        return
-
-    temp_file1 = decrypted_file + ".temp1"
-    temp_file2 = decrypted_file + ".temp2"
-    encrypted_file = decrypted_file + ".encrypted"
-    
-    # try:
-    
-    print("\n--- НАЧАЛО ШИФРОВАНИЯ/РАСШИФРОВАНИЯ ---")
-    print(f"1. Алиса шифрует '{input_file}' ключом C_a...")
-    cl.shamir_process_file(input_file, temp_file1, p, c_a, 1, BLOCK_SIZE)
-    
-    print(f"2. Боб шифрует полученный файл ключом C_b...")
-    cl.shamir_process_file(temp_file1, temp_file2, p, c_b, BLOCK_SIZE, BLOCK_SIZE)
-
-    print(f"3. Алиса расшифровывает своим ключом D_a...")
-    cl.shamir_process_file(temp_file2, encrypted_file, p, d_a, BLOCK_SIZE, BLOCK_SIZE)
-
-    print(f"4. Боб расшифровывает '{encrypted_file}' своим ключом D_b...")
-    cl.shamir_process_file(encrypted_file, decrypted_file, p, d_b, BLOCK_SIZE, 1)
-
-    print(f"\nПроцесс завершен. Финальный файл сохранен как '{decrypted_file}'")
-
-    # print("\n--- ПРОВЕРКА РЕЗУЛЬТАТА ---")
-    # hash_original = cl.calculate_file_hash(input_file)
-    # hash_decrypted = cl.calculate_file_hash(decrypted_file)
-
-    # print(f"Хэш исходного файла:    {hash_original}")
-    # print(f"Хэш расшифрованного файла: {hash_decrypted}")
-
-    # if hash_original and hash_original == hash_decrypted:
-    #     print("\nУСПЕХ! Файлы полностью совпадают.")
-    # else:
-    #     print("\nОШИБКА! Файлы не совпадают. Что-то пошло не так.")
-
-    # finally:
-    #     # --- Очистка временных файлов ---
-    #     print("\nОчистка временных файлов...")
-    #     for f in [temp_file1, temp_file2, encrypted_file]:
-    #         if os.path.exists(f):
-    #             os.remove(f)
-
-
-
-
-
 def main():
     """Главное меню программы."""
     while True:
@@ -217,7 +116,7 @@ def main():
         elif choice == '2':
             diffie_hellman.demo_diffie_hellman()
         elif choice == '3':
-            demo_shamir()
+            shamir.demo_shamir()
         elif choice == '4':
             elgamal.demo_elgamal()
         elif choice == '5':
