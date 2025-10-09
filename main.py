@@ -4,6 +4,8 @@ import os
 import math
 
 import rsa_sign
+import vernam
+import diffie_hellman
 
 def get_bsgs_input_from_keyboard():
     """
@@ -84,80 +86,8 @@ def demo_bsgs():
             else:
                 print("\n>>> Решение не найдено.")
 
-def get_dh_input_from_keyboard():
-    """Получение параметров p, g, X_A, X_B с клавиатуры."""
-    try:
-        p = int(input("Введите простое число p (модуль): "))
-        if not cl.fermat_primality_test(p):
-            print(f"Предупреждение: {p} не является вероятно простым числом.")
-        
-        g = int(input(f"Введите g (генератор, 1 < g < {p-1}): "))
-        secret_a = int(input("Введите секретный ключ Алисы (X_A): "))
-        secret_b = int(input("Введите секретный ключ Боба (X_B): "))
-        
-        return p, g, secret_a, secret_b
-    except ValueError:
-        print("Ошибка: введите целые числа!")
-        return None, None, None, None
 
 
-def demo_diffie_hellman():
-    """Меню для демонстрации протокола Диффи-Хеллмана."""
-    while True:
-        print("\n" + "=" * 50)
-        print("Протокол обмена ключами Диффи-Хеллмана")
-        print("=" * 50)
-        print("1 - Ввести параметры (p, g, X_A, X_B) с клавиатуры")
-        print("2 - Сгенерировать параметры автоматически")
-        print("0 - Вернуться в главное меню")
-        
-        choice = input("Ваш выбор: ")
-
-        if choice == '0':
-            break
-        
-        params = None
-        if choice == '1':
-            params = get_dh_input_from_keyboard()
-        elif choice == '2':
-            params = cl.generate_diffie_hellman_strong_params()
-        else:
-            print("Неверный выбор!")
-            continue
-
-        if params and all(p is not None for p in params):
-            p, g, x_a, x_b = params
-
-            print("\n--- Начальные параметры ---")
-            print(f"Публичные параметры: p = {p}, g = {g}")
-            print(f"Секретный ключ Алисы (X_A): {x_a}")
-            print(f"Секретный ключ Боба (X_B): {x_b}\n")
-            
-            print("--- Начало обмена ---")
-            
-            y_a, y_b, k_a, k_b = cl.diffie_hellman_exchange(p, g, x_a, x_b)
-            
-            print(f"1. Алиса вычисляет публичный ключ Y_A = g^X_A mod p")
-            print(f"   Y_A = {g}^{x_a} mod {p} = {y_a}")
-            print("   Алиса отправляет Y_A Бобу.\n")
-            
-            print(f"2. Боб вычисляет публичный ключ Y_B = g^X_B mod p")
-            print(f"   Y_B = {g}^{x_b} mod {p} = {y_b}")
-            print("   Боб отправляет Y_B Алисе.\n")
-            
-            print("--- Вычисление общего секрета ---")
-            
-            print(f"3. Алиса получила Y_B и вычисляет общий ключ K_A:")
-            print(f"   K_A = (Y_B)^X_A mod p = {y_b}^{x_a} mod {p} = {k_a}\n")
-
-            print(f"4. Боб получил Y_A и вычисляет общий ключ K_B:")
-            print(f"   K_B = (Y_A)^X_B mod p = {y_a}^{x_b} mod {p} = {k_b}\n")
-            
-            print("--- Результат ---")
-            if k_a == k_b:
-                print(f"УСПЕХ! Оба абонента получили одинаковый секретный ключ: {k_a}")
-            else:
-                print("ОШИБКА! Секретные ключи не совпадают.")
 
 
 
@@ -447,97 +377,6 @@ def demo_rsa():
         print(f"Произошла непредвиденная ошибка: {e}")
         return -1
 
-def demo_vernam():
-    """
-
-    """
-
-    print("\n" + "=" * 50)
-    print("Демонстрация шифра Вернама")
-    print("=" * 50)
-
-    try:
-        input_file = input("Введите путь к исходному файлу: ")
-        decrypted_file = input("Введите путь для сохранения конечного (расшифрованного) файла: ")
-        
-        if not os.path.exists(input_file):
-            print(f"Ошибка: Исходный файл '{input_file}' не найден.")
-            return
-    except Exception as e:
-        print(f"Ошибка ввода: {e}")
-        return
-
-    print("\nВыберите способ получения параметров:")
-    print("1 - Ввести ключ K с клавиатуры")
-    print("2 - Сгенерировать параметры автоматически")
-    param_choice = input("Ваш выбор: ")
-
-    
-    try:
-        if param_choice == '1':
-            k1 = int(input(f"Введите ключ шифрования K: "))
-
-        elif param_choice == '2':
-            print("\nГенерация параметров протоколом Деффи-Хелмана...")
-            p, g, secret_a, secret_b = cl.generate_diffie_hellman_strong_params()
-            public_a, public_b, k1, k2 = cl.diffie_hellman_exchange(p, g, secret_a, secret_b)
-
-            if k1 != k2:
-                print(f"Сгенерированные параметры протоколом Деффи-Хелмана не совпадают k1 = {k1}, k2 = {k2}")
-                return
-
-        else:
-            print("Неверный выбор!")
-            return
-            
-        print("\n--- Сгенерированные параметры ---")
-        print(f"key = {k1}")
-
-    except Exception as e:
-        print(f"Ошибка при обработке параметров: {e}")
-        return
-
-    encrypted_file = input_file + ".encrypted"
-    temp_encrypted_content = encrypted_file + ".temp_content"
-    
-    block_size_in = (k1.bit_length() + 7) // 8
-    block_size_out = block_size_in
-
-    print(f"\nИсходный файл разобъется на блоки размером {block_size_in} байт.")
-
-    try:
-                
-        print("\n--- НАЧАЛО ШИФРОВАНИЯ ---")
-        print(f"Шифруем '{input_file}' с использованием ключа {k1}")
-
-        original_size = os.path.getsize(input_file)
-        
-        cl.vernam_process_file(input_file, temp_encrypted_content, k1, block_size_in, block_size_out)
-        
-        with open(encrypted_file, 'wb') as f_out, open(temp_encrypted_content, 'rb') as f_in_temp:
-            f_out.write(original_size.to_bytes(8, byteorder='big'))
-            f_out.write(f_in_temp.read())
-        
-        os.remove(temp_encrypted_content)
-        print(f"Зашифрованный файл сохранен как {encrypted_file}")
-
-        print("\n--- НАЧАЛО РАСШИФРОВАНИЯ ---")
-        print(f"Расшифровываем '{encrypted_file}' с использованием приватного ключа X_b...")
-
-        with open(encrypted_file, 'rb') as f_in:
-            original_size_from_file = int.from_bytes(f_in.read(8), byteorder='big')
-            with open(temp_encrypted_content, 'wb') as f_out_temp:
-                f_out_temp.write(f_in.read())
-
-        cl.vernam_process_file(temp_encrypted_content, decrypted_file, k2, block_size_out, block_size_in, original_size_from_file)
-
-        os.remove(temp_encrypted_content)
-        print(f"Расшифрованный файл сохранен как '{decrypted_file}'")
-    
-    except Exception as e:
-        print(f"Произошла непредвиденная ошибка: {e}")
-        return -1
-
 
 
 def main():
@@ -563,7 +402,7 @@ def main():
         elif choice == '1':
             demo_bsgs() 
         elif choice == '2':
-            demo_diffie_hellman()
+            diffie_hellman.demo_diffie_hellman()
         elif choice == '3':
             demo_shamir()
         elif choice == '4':
@@ -571,7 +410,7 @@ def main():
         elif choice == '5':
             demo_rsa()
         elif choice == '6':
-            demo_vernam()
+            vernam.demo_vernam()
         elif choice == '7':
             rsa_sign.demo_rsa_sign()
         else:
