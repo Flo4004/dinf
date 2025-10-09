@@ -4,6 +4,7 @@ import os
 import math
 
 import diffie_hellman
+import elgamal
 import rsa
 import vernam
 import rsa_sign
@@ -187,85 +188,7 @@ def demo_shamir():
     #         if os.path.exists(f):
     #             os.remove(f)
 
-def demo_elgamal():
-    """
-    Единый процесс демонстрации шифра Эль-Гамаля:
-    Генерация ключей -> Шифрование -> Расшифрование.
-    """
-    
-    BLOCK_SIZE = 2
 
-    print("\n" + "=" * 50)
-    print("Демонстрация протокола Эль-Гамаля")
-    print("=" * 50)
-
-    try:
-        input_file = input("Введите путь к исходному файлу: ")
-        decrypted_file = input("Введите путь для сохранения конечного (расшифрованного) файла: ")
-        
-        if not os.path.exists(input_file):
-            print(f"Ошибка: Исходный файл '{input_file}' не найден.")
-            return
-    except Exception as e:
-        print(f"Ошибка ввода: {e}")
-        return
-
-    print("\nВыберите способ получения параметров:")
-    print("1 - Ввести p, C_a, C_b с клавиатуры")
-    print("2 - Сгенерировать параметры автоматически")
-    param_choice = input("Ваш выбор: ")
-
-    
-    try:
-        if param_choice == '1':
-            p = int(input(f"Введите простое p ({256**1} < p < {256**BLOCK_SIZE}): "))
-            if p <= 255:
-                print("Ошибка: p должно быть больше 255.")
-                return
-            if not cl.fermat_primality_test(p):
-                print(f"Предупреждение: {p} не является вероятно простым числом.")
-
-            g = int(input("Введите число g (первообразный корень p): "))
-            if cl.fast_exp_mod(g, (p-1)/2, p) == 1:
-                print(f"Предупреждение: {g} не является вероятно первообразным корнем.")
-                
-            x = int(input("Введите ключ Боба C_b: "))
-            y = cl.fast_exp_mod(g, x, p)
-
-        elif param_choice == '2':
-            print("\nГенерация параметров...")
-            p, g, x, y = cl.elgamal_generate_params()
-
-        else:
-            print("Неверный выбор!")
-            return
-            
-        print("\n--- Сгенерированные параметры ---")
-        print(f"p = {p}, g = {g}")
-        print(f"Открытый ключ: y (d_b) = {y}")
-        print(f"Секретный ключ: x (c_b) = {x}")
-
-    except Exception as e:
-        print(f"Ошибка при обработке параметров: {e}")
-        return
-
-    encrypted_file = input_file + ".encrypted"
-    
-    try:
-                
-        print("\n--- НАЧАЛО ШИФРОВАНИЯ ---")
-        print(f"Шифруем '{input_file}' с использованием публичного ключа Y_b...")
-        cl.elgamal_encrypt_file(input_file, encrypted_file, p, g , y, BLOCK_SIZE)
-        print(f"Зашифрованный файл сохранен как {encrypted_file}")
-
-        print("\n--- НАЧАЛО РАСШИФРОВАНИЯ ---")
-        print(f"Расшифровываем '{encrypted_file}' с использованием приватного ключа X_b...")
-        cl.elgamal_decrypt_file(encrypted_file, decrypted_file, p, x, BLOCK_SIZE)
-        print(f"Расшифрованный файл сохранен как '{decrypted_file}'")
-    
-    except Exception as e:
-        print(f"Произошла непредвиденная ошибка: {e}")
-        return -1
 
 
 
@@ -296,7 +219,7 @@ def main():
         elif choice == '3':
             demo_shamir()
         elif choice == '4':
-            demo_elgamal()
+            elgamal.demo_elgamal()
         elif choice == '5':
             rsa.demo_rsa()
         elif choice == '6':
