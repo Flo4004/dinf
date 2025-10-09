@@ -24,6 +24,8 @@ def fast_exp_mod(a, x, p):
         s = (s * s) % p
     return y
 
+
+
 def fermat_primality_test(n, k=50):
     """
     Тест простоты Ферма
@@ -44,6 +46,8 @@ def fermat_primality_test(n, k=50):
         if fast_exp_mod(a, n - 1, n) != 1:
             return False
     return True
+
+
 
 def extended_euclidean_algorithm(a, b):
     """
@@ -70,6 +74,8 @@ def extended_euclidean_algorithm(a, b):
     y = x1
     return gcd, x, y
 
+
+
 def mod_inverse(n, modulus):
     """
     Находит модульный мультипликативный обратный элемент.
@@ -95,46 +101,7 @@ def mod_inverse(n, modulus):
         raise Exception('Модульный обратный элемент не существует')
     return x % modulus
 
-def baby_step_giant_step(a, y, p):
-    """
-    Решает задачу дискретного логарифма методом "Шаг младенца, шаг великана".
 
-    Находит такое значение x, что удовлетворяет уравнению y = a^x mod p.
-    Алгоритм основан на идее "встречи посередине" и имеет временную
-    сложность O(sqrt(p)), что значительно эффективнее полного перебора.
-    
-    Args:
-        a (int): Основание степени.
-        y (int): Результат возведения в степень по модулю.
-        p (int): Простой модуль.
-        
-    Returns:
-        int or None: Целое число x, являющееся решением уравнения.
-                     Возвращает None, если решение не найдено.
-    """
-
-    m = int(math.sqrt(p)) + 1
-
-    baby_steps = {}
-    val = 1
-    for j in range(m):
-        baby_steps[val] = j
-        val = (val * a) % p
-
-    a_inv_m = mod_inverse(fast_exp_mod(a, m, p), p)
-
-    giant_step_val = y
-    for i in range(m):
-        if giant_step_val in baby_steps:
-            j = baby_steps[giant_step_val]
-            return i * m + j
-        giant_step_val = (giant_step_val * a_inv_m) % p
-
-    return None
-
-                            ######################
-                            ### ЛАБАРАТОРНАЯ 3 ###
-                            ######################
 
 def generate_safe_prime(min_val, max_val):
     """
@@ -154,6 +121,8 @@ def generate_safe_prime(min_val, max_val):
             if fermat_primality_test(p_candidate):
                 return p_candidate, q_candidate
 
+
+
 def find_primitive_root(p, q):
     """
     Args:
@@ -168,126 +137,7 @@ def find_primitive_root(p, q):
             return g
     return None
 
-def generate_diffie_hellman_strong_params(min_p=1000000, max_p=5000000):
-    """
-    
-    Args:
-        min_p (int): Минимальное значение для модуля P.
-        max_p (int): Максимальное значение для модуля P.
-    
-    Returns:
-        tuple: Кортеж (p, g, secret_a, secret_b).
-    """
-    p, q = generate_safe_prime(min_p, max_p)
-    
-    g = find_primitive_root(p, q)
-    
-    secret_a = random.randint(2, p - 2)
-    secret_b = random.randint(2, p - 2)
-    
-    return p, g, secret_a, secret_b
 
-def diffie_hellman_exchange(p, g, secret_a, secret_b):
-    """
-    Моделирует полный процесс обмена ключами по протоколу Диффи-Хеллмана.
-
-    1. Алиса и Боб получают публичные параметры (p, g).
-    2. Алиса генерирует свой публичный ключ Y_A = g^X_A mod p.
-    3. Боб генерирует свой публичный ключ Y_B = g^X_B mod p.
-    4. Алиса вычисляет общий секрет K_A = (Y_B)^X_A mod p.
-    5. Боб вычисляет общий секрет K_B = (Y_A)^X_B mod p.
-    В результате K_A должно быть равно K_B.
-    
-    Args:
-        p (int): Большое простое число, публичный параметр.
-        g (int): Генератор (первообразный корень), публичный параметр.
-        secret_a (int): Секретный ключ абонента A (Алисы).
-        secret_b (int): Секретный ключ абонента B (Боба).
-    
-    Returns:
-        tuple: Кортеж, содержащий:
-               - public_a (int): Публичный ключ Алисы (Y_A).
-               - public_b (int): Публичный ключ Боба (Y_B).
-               - shared_secret_a (int): Общий секрет, вычисленный Алисой.
-               - shared_secret_b (int): Общий секрет, вычисленный Бобом.
-    """
-    public_a = fast_exp_mod(g, secret_a, p)
-    
-    public_b = fast_exp_mod(g, secret_b, p)
-    
-    shared_secret_a = fast_exp_mod(public_b, secret_a, p)
-    
-    shared_secret_b = fast_exp_mod(public_a, secret_b, p)
-    
-    return public_a, public_b, shared_secret_a, shared_secret_b
-
-                            ######################
-                            ### ЛАБАРАТОРНАЯ 4 ###
-                            ######################
-
-def shamir_generate_keys(p):
-    """
-    Генерирует пару ключей (шифрующий C, расшифровывающий D) для протокола Шамира.
-    Ключ C должен быть взаимно простым с (p-1).
-    """
-    phi = p - 1
-    while True:
-        c = random.randint(2, phi - 1)
-        if math.gcd(c, phi) == 1:
-            d = mod_inverse(c, phi)
-            return c, d
-
-def shamir_generate_params(min_p=257, max_p=65535):
-    """
-    Генерирует полный набор параметров для протокола Шамира:
-    p выбирается > 256, чтобы любой байт (0-255) был меньше p.
-    p, C_a, D_a, C_b, D_b.
-    """
-
-    p = 0
-    while True:
-        candidate = random.randint(min_p, max_p)
-        if fermat_primality_test(candidate):
-            p = candidate
-            break
-            
-    c_a, d_a = shamir_generate_keys(p)
-    
-    c_b, d_b = shamir_generate_keys(p)
-    
-    return p, c_a, d_a, c_b, d_b
-
-def shamir_process_file(input_path, output_path, p, key, block_size_in, block_size_out):
-    """
-    Обрабатывает файл (шифрует/расшифровывает) по протоколу Шамира.
-    
-    Args:
-        input_path (str): Путь к входному файлу.
-        output_path (str): Путь к выходному файлу.
-        p (int): Простое число (модуль).
-        key (int): Ключ (C или D) для операции.
-        block_size_in (int): Размер блока для чтения (в байтах, 1 для исходного файла).
-        block_size_out (int): Размер блока для записи (в байтах, 2 или 4).
-    """
-    try:
-        with open(input_path, 'rb') as f_in, open(output_path, 'wb') as f_out:
-            while True:
-                block = f_in.read(block_size_in)
-                if not block:
-                    break
-                
-                val = int.from_bytes(block, byteorder='big')
-                
-                processed_val = fast_exp_mod(val, key, p)
-                
-                f_out.write(processed_val.to_bytes(block_size_out, byteorder='big'))
-        return True
-    except FileNotFoundError:
-        print(f"Ошибка: Файл не найден по пути {input_path}")
-        return False
-    except Exception as e:
-        print(f"Произошла ошибка при обработке файла: {e}")
-        return False
     
 def calculate_file_hash(filepath):
     """
@@ -302,332 +152,3 @@ def calculate_file_hash(filepath):
         return sha256_hash.digest()
     except FileNotFoundError:
         return None
-    
-                            ######################
-                            ### ЛАБАРАТОРНАЯ 5 ###
-                            ######################
-
-def elgamal_generate_params(min_p = 255, max_p=65535):
-    """
-    Генерирует полный набор параметров для протокола Эль-Гамаля:
-    p выбирается > 256, чтобы любой байт (0-255) был меньше p.
-    Returns:
-        tuple: Кортеж, содержащий:
-            - p (int): Большое простое число.
-            - g (int): Первообразный корень p.
-            - x (int): Секретный ключ Боба (c_b).
-            - y (int): Публичный (открытый) ключ Боба (d_b).
-    """
-
-    p, q = generate_safe_prime(min_p, max_p)
-    g = find_primitive_root(p, q)
-
-    x = random.randint(2, p-1)
-    y = fast_exp_mod(g, x, p)
-
-    return p, g, x, y
-
-def elgamal_encrypt_file(input_path, output_path, p, g, public_key_y, block_size_out = 2):
-    """
-    Шифрует файл по протоколу Эль-Гамаля.
-    
-    Args:
-        input_path (str): Путь к входному файлу.
-        output_path (str): Путь к выходному файлу.
-        p (int): Простое число.
-        g (int): Первообразный корень p.
-        public_key_y (int): Публичный ключ получателя (y)
-        block_size_out (int): Размер блока для записи чисел a и b (в байтах).
-    """
-    try:
-        with open(input_path, 'rb') as f_in, open(output_path, 'wb') as f_out:
-            while True:
-                block = f_in.read(1)
-                if not block:
-                    break
-                
-                m = int.from_bytes(block, byteorder='big')
-                
-                k = random.randint(2, p - 2)
-                
-                a = fast_exp_mod(g, k, p)
-                b = (fast_exp_mod(public_key_y, k, p) * m) % p
-
-                f_out.write(a.to_bytes(block_size_out, byteorder='big'))
-                f_out.write(b.to_bytes(block_size_out, byteorder='big'))
-        return True
-    
-    except FileNotFoundError:
-        print(f"Ошибка: Файл не найден по пути {input_path}")
-        return False
-    except Exception as e:
-        print(f"Произошла ошибка при обработке файла: {e}")
-        return False
-    
-def elgamal_decrypt_file(input_path, output_path, p, private_key_x, block_size_in=2):
-    """
-    Расшифровывает файл с использованием приватного ключа получателя.
-    
-    Args:
-        input_path (str): Путь к зашифрованному файлу.
-        output_path (str): Путь для сохранения расшифрованного файла.
-        p (int): Публичный параметр (простое число).
-        private_key_x (int): Приватный ключ получателя (X).
-        block_size_in (int): Размер блока для чтения чисел a и b (в байтах).
-    """
-    try:
-        with open(input_path, 'rb') as f_in, open(output_path, 'wb') as f_out:
-            while True:
-                a_bytes = f_in.read(block_size_in)
-                b_bytes = f_in.read(block_size_in)
-                if not a_bytes or not b_bytes:
-                    break
-                    
-                a = int.from_bytes(a_bytes, byteorder='big')
-                b = int.from_bytes(b_bytes, byteorder='big')
-                
-                m = fast_exp_mod(a, p - 1 - private_key_x, p) * b % p
-                
-                f_out.write(m.to_bytes(1, byteorder='big'))
-        return True
-    except FileNotFoundError:
-        print(f"Ошибка: Файл не найден по пути {input_path}")
-        return False
-    
-                            ######################
-                            ### ЛАБАРАТОРНАЯ 6 ###
-                            ######################
-
-def rsa_generate_params(min_p = 255, max_p=65535):
-    """
-    Генерирует полный набор параметров для протокола RSA.
-    Returns:
-        tuple: Кортеж, содержащий:
-            - n_big (int): Большое простое число.
-            - public_key (int): Публичный ключ Боба (d_b).
-            - perivate_key (int): Секретный ключ Боба (c_b).
-    """
-
-    while True:
-        p_candidate = random.randint(min_p, max_p)
-        if fermat_primality_test(p_candidate):
-            p = p_candidate
-            break
-
-    while True:
-        q_candidate = random.randint(min_p, max_p)
-        if fermat_primality_test(q_candidate) and q_candidate != p:
-            q = q_candidate
-            break
-        
-    n_big = p*q
-
-    phi = (p-1)*(q-1)
-    while True:
-        d_candidate = random.randint(2, phi - 1)
-        if math.gcd(d_candidate, phi) == 1:
-            public_key = d_candidate
-            break
-
-    private_key = mod_inverse(public_key, phi)
-
-    return n_big, public_key, private_key
-
-def rsa_process_file(input_path, output_path, n_big, key, block_size_in, block_size_out, original_size=None):
-    """
-    Шифрует файл по протоколу RSA.
-    
-    Args:
-        input_path (str): Путь к входному файлу.
-        output_path (str): Путь к выходному файлу.
-        n_big (int): Большое специально сгенерированное число.
-        key (int): Ключ.
-        block_size_in (int): Размер блока для чтения (в байтах).
-        block_size_out (int): Размер блока для записи (в байтах).
-    """
-    try:
-        with open(input_path, 'rb') as f_in, open(output_path, 'wb') as f_out:
-            
-            bytes_written = 0
-            
-            while True:
-                block = f_in.read(block_size_in)
-                if not block:
-                    break
-                
-                val = int.from_bytes(block, byteorder='big')
-                
-                process_val = fast_exp_mod(val, key, n_big)
-                
-                if original_size is not None:
-                    remaining_bytes = original_size - bytes_written
-                    bytes_to_write_count = min(block_size_out, remaining_bytes)
-                else:
-                    bytes_to_write_count = block_size_out
-
-                processed_block = process_val.to_bytes(block_size_out, byteorder='big')
-
-                if original_size is not None:
-                    f_out.write(processed_block[-bytes_to_write_count:])
-                    bytes_written += bytes_to_write_count
-                else:
-                    f_out.write(processed_block)
-
-        return True
-    
-    except FileNotFoundError:
-        print(f"Ошибка: Файл не найден по пути {input_path}")
-        return False
-    except Exception as e:
-        print(f"Произошла ошибка при обработке файла: {e}")
-        return False
-
-
-                            ######################
-                            ### ЛАБАРАТОРНАЯ 7 ###
-                            ######################
-
-def vernam_process_file(input_path, output_path, key, block_size_in, block_size_out, original_size=None):
-    """
-    Шифрует файл шифром Вернама
-    
-    Args:
-        input_path (str): Путь к входному файлу.
-        output_path (str): Путь к выходному файлу.
-        key (int): Ключ.
-        block_size_in (int): Размер блока для чтения (в байтах).
-        block_size_out (int): Размер блока для записи (в байтах).
-    """
-    try:
-        with open(input_path, 'rb') as f_in, open(output_path, 'wb') as f_out:
-
-            bytes_written = 0
-
-            while True:
-                block = f_in.read(block_size_in)
-                if not block:
-                    break
-                
-                m = int.from_bytes(block, byteorder='big')
-
-                e = m ^ key
-
-                if original_size is not None:
-                    remaining_bytes = original_size - bytes_written
-                    bytes_to_write_count = min(block_size_out, remaining_bytes)
-                else:
-                    bytes_to_write_count = block_size_out
-
-                processed_block = e.to_bytes(block_size_out, byteorder='big')
-
-                if original_size is not None:
-                    f_out.write(processed_block[-bytes_to_write_count:])
-                    bytes_written += bytes_to_write_count
-                else:
-                    f_out.write(processed_block)
-        
-        return True
-
-    except FileNotFoundError:
-        print(f"Ошибка: Файл не найден по пути {input_path}")
-        return False
-    
-    except Exception as e:
-        print(f"Произошла ошибка при обработке файла: {e}")
-        return False
-    
-                            ######################
-                            ### ЛАБАРАТОРНАЯ 8 ###
-                            ######################
-
-def rsa_sign(input_path, sign_path, n_big, private_key, public_key):
-    """
-    Подписывает файл по протоколу RSA.
-    
-    Args:
-        input_path (str): Путь к входному файлу (файл для подписи).
-        output_path (str): Путь к выходному файлу (файл с вычисленной подписью).
-        n_big (int): Большое специально сгенерированное число.
-        private_key (int): Приватный ключ используемый только для подписи.
-        public_key (int): Публичный ключ записывается в файл для дальнейшей проверки подписи
-    """
-    try:
-        file_hash = calculate_file_hash(input_path)
-        if file_hash is None: return False
-                
-        signed_byte_len = (n_big.bit_length() + 7) // 8
-        with open(sign_path, 'wb') as f_sign:
-            
-            n_bytes = n_big.to_bytes(signed_byte_len, 'big')
-            f_sign.write(len(n_bytes).to_bytes(2, 'big'))
-            f_sign.write(n_bytes)
-
-            public_key_bytes = public_key.to_bytes((public_key.bit_length() + 7) // 8, 'big' )
-            f_sign.write(len(public_key_bytes).to_bytes(2, 'big'))
-            f_sign.write(public_key_bytes)
-
-            for byte_of_hash in file_hash:
-                
-                signed_byte_int = fast_exp_mod(byte_of_hash, private_key, n_big)
-                f_sign.write(signed_byte_int.to_bytes(signed_byte_len, 'big'))
-
-        return True
-    
-    except FileNotFoundError:
-        print(f"Ошибка: Файл не найден по пути {input_path}")
-        return False
-    except Exception as e:
-        print(f"Произошла ошибка при обработке файла: {e}")
-        return False
-    
-def rsa_check_sign(input_path, sign_path):
-    """
-    Проверяет подпись файла по протоколу RSA.
-    
-    Args:
-        input_path (str): Путь к входному файлу (файл для подписи).
-        output_path (str): Путь к выходному файлу (файл с вычисленной подписью).
-    """
-    try:
-        expected_hash = calculate_file_hash(input_path)
-        if expected_hash is None: return False
-
-        reconstructed_hash = b''
-
-        with open(sign_path, 'rb') as f_sign:
-            n_len = int.from_bytes(f_sign.read(2), 'big')
-            n = int.from_bytes(f_sign.read(n_len), 'big')
-            
-            public_key_len = int.from_bytes(f_sign.read(2), 'big')
-            public_key = int.from_bytes(f_sign.read(public_key_len), 'big')
-            
-            signed_byte_len = n_len
-
-            while True:
-                signed_byte_chunk = f_sign.read(signed_byte_len)
-                if not signed_byte_chunk:
-                    break
-                
-                signed_byte_int = int.from_bytes(signed_byte_chunk, 'big')
-                
-                decrypted_byte_int = fast_exp_mod(signed_byte_int, public_key, n)
-                
-                reconstructed_hash += decrypted_byte_int.to_bytes(1, 'big')
-
-        if reconstructed_hash == expected_hash:
-            print("ПОДПИСЬ ВЕРНА")
-            print(f"Ожидаемый хэш: {expected_hash.hex()}")
-            print(f"Полученный хэш: {reconstructed_hash.hex()}")
-            return True
-        else:
-            print("ПОДПИСЬ НЕВЕРНА!")
-            print(f"Ожидаемый хэш: {expected_hash.hex()}")
-            print(f"Полученный хэш: {reconstructed_hash.hex()}")
-            return False
-    
-    except FileNotFoundError:
-        print(f"Ошибка: Файл не найден по пути {input_path}")
-        return False
-    except Exception as public_key:
-        print(f"Произошла ошибка при обработке файла: {public_key}")
-        return False
