@@ -536,6 +536,109 @@ def demo_vernam():
         print(f"Произошла непредвиденная ошибка: {e}")
         return -1
 
+def demo_rsa_sign():
+    """
+    Единый процесс демонстрации подписи и проверки RSA.
+    """
+    print("\n" + "=" * 50)
+    print("Демонстрация подписи RSA")
+    print("=" * 50)
+
+    print("\nЧто вы хотите сделать?")
+    print("1. Подписать файл")
+    print("2. Проверить подпись")
+    choice = input("Ваш выбор: ")
+
+    if choice == '1':
+        try:
+            input_file = input("\nВведите путь к подписываемому файлу: ")
+            sign_file = input_file + ".sig"
+
+            if not os.path.exists(input_file):
+                print(f"Ошибка: Исходный файл '{input_file}' не найден.")
+                return
+        except Exception as e:
+            print(f"Ошибка ввода: {e}")
+            return
+
+        print("\nВыберите способ получения параметров:")
+        print("1 - Ввести p и q с клавиатуры")
+        print("2 - Сгенерировать параметры автоматически")
+        param_choice = input("Ваш выбор: ")
+
+        try:
+            if param_choice == '1':
+                p = int(input("Введите простое p: "))
+                if p <= 255:
+                    print("Ошибка: p должно быть больше 255.")
+                    return
+                if not cl.fermat_primality_test(p):
+                    print(f"Предупреждение: {p} не является вероятно простым числом.")
+
+                q = int(input("Введите простое q: "))
+                if q <= 255:
+                    print("Ошибка: q должно быть больше 255.")
+                    return
+                if not cl.fermat_primality_test(q):
+                    print(f"Предупреждение: {q} не является вероятно простым числом.")
+                
+                n_big = p * q
+                phi = (p - 1) * (q - 1)
+
+                public_key = int(input("Введите публичный ключ: "))
+                if math.gcd(public_key, phi) != 1:
+                    print(f"Предупреждение: {public_key} не является взаимно простым с phi.")
+
+                private_key = cl.mod_inverse(public_key, phi)
+            elif param_choice == '2':
+                print("\nГенерация параметров...")
+                n_big, public_key, private_key = cl.rsa_generate_params()
+            else:
+                print("Неверный выбор!")
+                return
+
+            print("\n--- Сгенерированные параметры ---")
+            print(f"N = {n_big}")
+            print(f"Открытый ключ: {public_key}")
+            print(f"Секретный ключ: {private_key}")
+
+        except Exception as e:
+            print(f"Ошибка при обработке параметров: {e}")
+            return
+
+        block_size_out = (n_big.bit_length() + 7) // 8
+        block_size_in = 1
+
+        if block_size_in <= 0:
+            print("Ошибка: сгенерированные p и q слишком малы. n должен быть > 255.")
+            return
+
+        try:
+            print("\n--- НАЧАЛО ПОДПИСИ ---")
+
+            cl.rsa_sign(input_file, sign_file, n_big, private_key, public_key)
+
+            print(f"Файл подписи '{sign_file}' успешно создан.")
+            
+        except Exception as e:
+            print(f"Произошла непредвиденная ошибка: {e}")
+            return -1
+        
+    elif choice == '2':
+        try:
+            input_file = input("\nВведите путь к подписываемому файлу: ")
+            sign_file = input_file + ".sig"
+
+            if not os.path.exists(input_file):
+                print(f"Ошибка: Исходный файл '{input_file}' не найден.")
+                return
+        except Exception as e:
+            print(f"Ошибка ввода: {e}")
+            return
+        
+        print("\n--- НАЧАЛО ПРОВЕРКИ ---")
+        cl.rsa_check_sign(input_file, sign_file)
+
 def main():
     """Главное меню программы."""
     while True:
@@ -548,6 +651,7 @@ def main():
         print("4 - Шифр Эль-Гамаля")
         print("5 - Шифр RSA")
         print("6 - Шифр Вернама")
+        print("7 - Подпись/Проверка RSA")
         print("0 - Выход")
         
         choice = input("Ваш выбор: ")
@@ -567,6 +671,8 @@ def main():
             demo_rsa()
         elif choice == '6':
             demo_vernam()
+        elif choice == '7':
+            demo_rsa_sign()
         else:
             print("Неверный выбор!")
 
