@@ -2,6 +2,8 @@ import crypt_lib as cl
 import math
 import os
 
+import rsa
+
 def rsa_sign(input_path, sign_path, n_big, private_key, public_key):
     """
     Подписывает файл по протоколу RSA.
@@ -152,9 +154,11 @@ def demo_rsa_sign():
                     print(f"Предупреждение: {public_key} не является взаимно простым с phi.")
 
                 private_key = cl.mod_inverse(public_key, phi)
+            
             elif param_choice == '2':
                 print("\nГенерация параметров...")
-                n_big, public_key, private_key = cl.rsa_generate_params()
+                n_big, public_key, private_key = rsa.rsa_generate_params()
+            
             else:
                 print("Неверный выбор!")
                 return
