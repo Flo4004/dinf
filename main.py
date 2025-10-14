@@ -10,6 +10,8 @@ import elgamal
 import rsa
 import vernam
 import rsa_sign
+import rsa_sign_big
+import elgamal_sign
 
 def main():
     """Главное меню программы."""
@@ -24,6 +26,7 @@ def main():
         print("5 - Шифр RSA")
         print("6 - Шифр Вернама")
         print("7 - Подпись/Проверка RSA")
+        print("8 - Подпись Эль-Гамаля")
         print("0 - Выход")
 
         choice = input("Ваш выбор: ")
@@ -44,7 +47,10 @@ def main():
         elif choice == '6':
             vernam.demo_vernam()
         elif choice == '7':
-            rsa_sign.demo_rsa_sign()
+            # rsa_sign.demo_rsa_sign()
+            rsa_sign_big.demo_rsa_sign()
+        elif choice == '8':
+            elgamal_sign.demo_elgamal_sign()
         else:
             print("Неверный выбор!")
 
