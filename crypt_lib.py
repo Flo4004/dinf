@@ -152,3 +152,12 @@ def calculate_file_hash(filepath):
         return sha256_hash.digest()
     except FileNotFoundError:
         return None
+
+
+
+def generate_prime_bits(bits):
+    """Генерация простого числа заданной битности"""
+    while True:
+        num = random.randint(2**(bits-1), 2**bits - 1)
+        if fermat_primality_test(num):
+            return num
