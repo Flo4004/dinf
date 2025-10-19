@@ -154,6 +154,20 @@ def calculate_file_hash(filepath):
         return None
 
 
+def file_hash_sha1(filepath):
+    """
+    Вычисляет хэш SHA-1 файла
+    """
+    sha256_hash = hashlib.sha1()
+    try:
+        with open(filepath, "rb") as f:
+            # Читаем файл по частям для экономии памяти
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.digest()
+    except FileNotFoundError:
+        return None
+
 
 def generate_prime_bits(bits):
     """Генерация простого числа заданной битности"""

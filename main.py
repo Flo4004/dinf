@@ -13,6 +13,7 @@ import rsa_sign
 import rsa_sign_big
 import elgamal_sign
 import gost
+import fips
 
 def main():
     """Главное меню программы."""
@@ -29,6 +30,7 @@ def main():
         print("7 - Подпись/Проверка RSA")
         print("8 - Подпись Эль-Гамаля")
         print("9 - Подпись ГОСТ Р 34.10-94")
+        print("10 - Подпись FIPS 186")
         print("0 - Выход")
 
         choice = input("Ваш выбор: ")
@@ -55,6 +57,8 @@ def main():
             elgamal_sign.demo_elgamal_sign()
         elif choice == '9':
             gost.demo_gost_sign()
+        elif choice == '10':
+            fips.demo_fips_sign()
         else:
             print("Неверный выбор!")
 
