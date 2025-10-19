@@ -62,7 +62,7 @@ def elgamal_sign(input_path, sign_path, p, g, private_key, public_key):
 
 def elgamal_check_sign(input_path, sign_path):
     """
-    Проверяет подпись файла по протоколу RSA.
+    Проверяет подпись файла по протоколу Эль-Гамаль.
     
     Args:
         input_path (str): Путь к входному файлу (файл для подписи).
