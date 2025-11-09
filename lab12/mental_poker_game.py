@@ -121,7 +121,6 @@ Game Start: {self.game_start_time.strftime("%Y-%m-%d %H:%M:%S")}
         self._write_to_log("--- 2. DECK ENCRYPTION PHASE ---")
         self.socketio.emit('encrypt_cards', {'cards': self.cards_to_process, 'player_index': self.current_player_index}, room=self.players[first_player_id]['socket_id'])
 
-    # ----- ИСПРАВЛЕННАЯ ФУНКЦИЯ -----
     def handle_encrypted_cards(self, player_id, encrypted_cards):
         if self.processing_phase != "encryption" or player_id != self.player_order[self.current_player_index]: return False, "Invalid action"
             
@@ -154,14 +153,12 @@ Game Start: {self.game_start_time.strftime("%Y-%m-%d %H:%M:%S")}
             self._write_to_log("[ENCRYPTION] Final deck is fully encrypted and shuffled.")
             self.start_card_dealing()
         return True, "Encryption processed"
-    # ----- КОНЕЦ ИСПРАВЛЕННОЙ ФУНКЦИИ -----
 
     def start_card_dealing(self):
         self.phase = "dealing"
         self.add_log("Раздача карт...")
         self._write_to_log("--- 3. DEALING CARDS TO PLAYERS ---")
         for player_id in self.player_order:
-            # .pop() теперь берет карты из случайно перемешанной колоды
             player_cards = [self.deck.pop() for _ in range(2) if self.deck]
             self.players[player_id]['cards'] = player_cards
             player_name = self.players[player_id]['name']
