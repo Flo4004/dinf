@@ -126,7 +126,7 @@ Game Start: {self.game_start_time.strftime("%Y-%m-%d %H:%M:%S")}
             
         player_name = self.players[player_id]['name']
         
-        # 1. Сохраняем перемешанный порядок, полученный от клиента. ЭТО КЛЮЧЕВОЕ ИЗМЕНЕНИЕ.
+        # 1. Сохраняем перемешанный порядок, полученный от клиента.
         self.cards_to_process = encrypted_cards
         
         # 2. Для удобства чтения логов, создаем ВРЕМЕННУЮ отсортированную копию.
