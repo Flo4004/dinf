@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ментальный покер</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>♠️ Ментальный покер ♥️</h1>
+            <div class="subtitle">Криптографический Техасский Холдем</div>
+        </header>
+
+        <div class="game-area">
+            <!-- Информация о фазе -->
+            <div class="phase-info" id="phaseInfo">
+                Ожидание подключения игроков...
+            </div>
+
+            <!-- Игровой стол -->
+            <div class="poker-table">
+                <div class="table-center">
+                    <div class="deck" id="deck">
+                        <div class="deck-count" id="deckCount">52</div>
+                    </div>
+                    <div class="community-cards" id="communityCards">
+                        <!-- Карты на столе -->
+                    </div>
+                    <div class="phase-display" id="phaseName">ОЖИДАНИЕ</div>
+                </div>
+
+                <!-- Игроки вокруг стола -->
+                <div class="players-around">
+                    <div class="player-seat top" id="playerTop">
+                        <div class="seat-empty">-</div>
+                    </div>
+                    <div class="player-seat right" id="playerRight">
+                        <div class="seat-empty">-</div>
+                    </div>
+                    <div class="player-seat bottom" id="playerBottom">
+                        <!-- Текущий игрок -->
+                    </div>
+                    <div class="player-seat left" id="playerLeft">
+                        <div class="seat-empty">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Управление -->
+            <div class="controls">
+                <button id="nextPhaseBtn" class="btn">Начать игру / Следующая фаза</button>
+            </div>
+
+            <!-- Карты текущего игрока -->
+            <div class="my-cards">
+                <h3>Ваши карты:</h3>
+                <div class="cards-container" id="playerHand">
+                    <div class="card-placeholder">??</div>
+                    <div class="card-placeholder">??</div>
+                </div>
+            </div>
+
+            <!-- Форма ключей -->
+            <div id="keysForm" class="keys-form" style="display: none;">
+                <h3>Отправить ключи для проверки</h3>
+                <div class="key-inputs">
+                    <input type="number" id="keyC" placeholder="Ключ C">
+                    <input type="number" id="keyD" placeholder="Ключ D">
+                    <button id="submitKeysBtn" class="btn">Отправить ключи</button>
+                </div>
+            </div>
+
+            <!-- Логи -->
+            <div class="logs">
+                <h3>Журнал игры</h3>
+                <div class="log-container" id="logContainer">
+                    <div class="log-entry">Добро пожаловать в игру!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>
